@@ -10,6 +10,7 @@ import streamlit as st
 import pandas as pd
 import pickle
 import numpy as np
+import sklearn
 
 # Load the trained model
 with open('LinearRegressionModel.pickle', 'rb') as f:
