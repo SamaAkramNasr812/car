@@ -54,8 +54,10 @@ def train_model(df):
     )
     
     # Create and fit the model pipeline
-    model = Pipeline(steps=[('preprocessor', preprocessor),
-                             ('regressor', LinearRegression())])
+    model = Pipeline(steps=[
+        ('preprocessor', preprocessor),
+        ('regressor', LinearRegression())
+    ])
     
     model.fit(X, y)
     
