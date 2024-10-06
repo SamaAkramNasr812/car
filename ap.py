@@ -47,29 +47,36 @@ def train_model(df):
     categorical_cols = X.select_dtypes(include=['object', 'string']).columns.tolist()
     numerical_cols = X.select_dtypes(exclude=['object', 'string']).columns.tolist()
 
-    # Create a pipeline for preprocessing
-    preprocessor = ColumnTransformer(
-        transformers=[
-            ('num', StandardScaler(), numerical_cols),
-            ('cat', OneHotEncoder(handle_unknown='ignore'), categorical_cols)
-        ]
-    )
-    
-    # Create and fit the model pipeline
-    model = Pipeline(steps=[
-        ('preprocessor', preprocessor),
-        ('regressor', LinearRegression())
-    ])
-    
-    model.fit(X, y)
+    # Use pd.get_dummies for categorical columns
+    X_encoded = pd.get_dummies(X, columns=categorical_cols, drop_first=True)
+
+    # Scale numerical features
+    scaler = StandardScaler()
+    X_encoded[numerical_cols] = scaler.fit_transform(X_encoded[numerical_cols])
+
+    # Create and fit the model
+    model = LinearRegression()
+    model.fit(X_encoded, y)
     
     return model
 
+
 def predict_price(model, features):
     # Convert features to DataFrame
-    feature_names = model.named_steps['preprocessor'].get_feature_names_out()
-    features_df = pd.DataFrame([features], columns=feature_names)
-    return model.predict(features_df)[0]
+    feature_names = model.get_feature_names_out()  # Get feature names after pd.get_dummies
+    
+    # Debugging output
+    print("Features:", features)
+    print("Feature Names:", feature_names)
+
+    # Create a DataFrame for the input features
+    input_data = pd.DataFrame([features], columns=feature_names)
+    
+    # Ensure the input data has the same columns as the training data
+    input_data = input_data.reindex(columns=feature_names, fill_value=0)
+
+    return model.predict(input_data)[0]
+
 
 def main():
     st.title("Car Price Prediction App")
