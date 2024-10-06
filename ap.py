@@ -29,6 +29,10 @@ def train_model(df):
     # One-hot encode categorical columns
     df_encoded = pd.get_dummies(df, columns=categorical_cols, drop_first=True)
 
+    # Check if 'price' is in the DataFrame
+    if 'price' not in df_encoded.columns:
+        raise KeyError("The 'price' column is not in the DataFrame after encoding.")
+
     # Define features and target
     X = df_encoded.drop(columns=["price"])  # Assuming 'price' is the target variable
     y = df_encoded["price"]
