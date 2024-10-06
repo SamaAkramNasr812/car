@@ -10,8 +10,8 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 from sklearn.linear_model import LinearRegression
-from sklearn.model_selection import train_test_split, KFold, cross_val_score
-from sklearn.preprocessing import StandardScaler, OneHotEncoder, LabelEncoder
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from joblib import dump, load
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
@@ -24,8 +24,8 @@ def load_data():
 
 def train_model(df):
     # Identify categorical and numerical columns
-    categorical_cols = df.select_dtypes(include=['object', 'string']).columns
-    numerical_cols = df.select_dtypes(exclude=['object', 'string']).columns
+    categorical_cols = df.select_dtypes(include=['object', 'string']).columns.tolist()
+    numerical_cols = df.select_dtypes(exclude=['object', 'string']).columns.tolist()
 
     # Create a pipeline for preprocessing
     preprocessor = ColumnTransformer(
@@ -55,6 +55,7 @@ def predict_price(model, input_data):
     # Make the prediction
     prediction = model.predict(input_data_encoded)
     return prediction[0]
+
 # Main function
 def main():
     st.title("Car Price Prediction App")
@@ -64,17 +65,18 @@ def main():
 
     # Train model if not already trained
     if 'model' not in st.session_state:
-        model, scaler = train_model(df)
+        model = train_model(df)
         dump(model, 'LinearRegressionModel.joblib')  # Save the model
         st.session_state.model = model
-        st.session_state.scaler = scaler
     else:
         model = st.session_state.model
-        scaler = st.session_state.scaler
 
     # User inputs for features using select boxes
     st.sidebar.header("Input Features")
     
+    # Select box for car_name
+    car_name = st.sidebar.selectbox("Car Name", options=df['car_name'].unique())
+
     # Numeric inputs
     symboling = st.sidebar.number_input("Symboling", value=3, min_value=-2, max_value=3)
     wheelbase = st.sidebar.number_input("Wheelbase", value=88.6, min_value=86.6, max_value=120.9)
@@ -107,10 +109,11 @@ def main():
         features = [symboling, fueltype, aspiration, doornumber, carbody, drivewheel,
                     enginelocation, wheelbase, carlength, carwidth, carheight, curbweight,
                     enginetype, cylindernumber, enginesize, fuelsystem, boreratio, stroke,
-                    compressionratio, horsepower, peakrpm, citympg, highwaympg]
+                    compressionratio, horsepower, peakrpm, citympg, highwaympg, car_name]
 
-        predicted_price = predict_price(model, scaler, features)
+        predicted_price = predict_price(model, features)
         st.success(f"The predicted car price is: ${predicted_price:.2f}")
 
 if __name__ == "__main__":
     main()
+
