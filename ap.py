@@ -20,13 +20,26 @@ def load_data():
     df = pd.read_csv('car_data.csv')  # Replace with your actual CSV file path
     print("DataFrame Columns:", df.columns.tolist())  # Check columns
     return df
-
+ model = Pipeline(steps=[('preprocessor', preprocessor),
+                             ('regressor', LinearRegression())])
+    
 def train_model(df):
+    # Strip any whitespace from column names
+    df.columns = df.columns.str.strip()
+    
+    # Check for duplicates
+    if df.columns.duplicated().any():
+        st.error("There are duplicate column names in the dataset.")
+        return None
+
     # Ensure 'price' column exists
-    df.columns = df.columns.str.strip()  # Strip any whitespace from column names
     if 'price' not in df.columns:
         st.error("The 'price' column is not present in the dataset.")
         return None
+
+    # Proceed with feature extraction
+    X = df.drop(columns=["price"])
+    y = df["price"]
 
     # Identify categorical and numerical columns
     categorical_cols = df.select_dtypes(include=['object', 'string']).columns.tolist()
@@ -40,10 +53,6 @@ def train_model(df):
         ]
     )
     
-    # Define features and target
-    X = df.drop(columns=["price"])
-    y = df["price"]
-
     # Create and fit the model pipeline
     model = Pipeline(steps=[('preprocessor', preprocessor),
                              ('regressor', LinearRegression())])
@@ -51,6 +60,7 @@ def train_model(df):
     model.fit(X, y)
     
     return model
+
 
 def predict_price(model, features):
     # Convert features to DataFrame
