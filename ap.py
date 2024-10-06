@@ -54,7 +54,7 @@ def train_model(df):
     # Train the model with cross-validation
     model = LinearRegression()
     model_score = cross_val_score(model, X, y, cv=kf)
-    st.write(f"Model Score (Cross-Validation): {np.mean(model_score) * 100:0.2f}%")
+
 
     # Fit the model
     model.fit(X, y)
