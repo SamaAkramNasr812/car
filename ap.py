@@ -20,9 +20,6 @@ def load_data():
     df = pd.read_csv('car_data.csv')  # Replace with your actual CSV file path
     print("DataFrame Columns:", df.columns.tolist())  # Check columns
     return df
- model = Pipeline(steps=[('preprocessor', preprocessor),
-                             ('regressor', LinearRegression())])
-    
 def train_model(df):
     # Strip any whitespace from column names
     df.columns = df.columns.str.strip()
