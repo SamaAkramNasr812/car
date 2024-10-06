@@ -8,61 +8,150 @@ Original file is located at
 """
 import streamlit as st
 import pandas as pd
-import pickle
 import numpy as np
-import sklearn
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split, KFold, cross_val_score
+from sklearn.preprocessing import StandardScaler
+from joblib import dump, load
 
-# Load the trained model
-with open('LinearRegressionModel.pickle', 'rb') as f:
-    model = pickle.load(f)
+# Load the dataset
+@st.cache_data
+def load_data():
+    df = pd.read_csv('car_data.csv')  # Replace with your actual CSV file path
+    return df
+
+# Train the Linear Regression model
+def train_model(df):
+    # Define features and target
+    X = df.drop(columns=["price"])  # Assuming 'price' is the target variable
+    y = df["price"]
+
+    # Feature scaling
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X)
+
+    # Initialize KFold
+    kf = KFold(n_splits=5, shuffle=True, random_state=31)
+
+    # Train the model with cross-validation
+    model = LinearRegression()
+    model_score = cross_val_score(model, X_scaled, y, cv=kf)
+    st.write(f"Model Score (Cross-Validation): {np.mean(model_score) * 100:0.2f}%")
+
+    # Fit the model
+    model.fit(X_scaled, y)
+
+    return model, scaler
 
 # Function to make predictions
-def predict_price(features):
+def predict_price(model, scaler, features):
     # Convert features to DataFrame
     input_data = pd.DataFrame([features])
-    prediction = model.predict(input_data)
+    input_data_scaled = scaler.transform(input_data)  # Scale the input data
+    prediction = model.predict(input_data_scaled)
     return prediction[0]
 
-# Streamlit app layout
-st.title("Car Price Prediction App")
+# Main function
+def main():
+    st.title("Car Price Prediction App")
 
-# User inputs for features
-symboling = st.number_input("Symboling", value=3)
-CarName = st.text_input("Car Name", value="alfa-romero giulia")
-fueltype = st.selectbox("Fuel Type", options=[0, 1], format_func=lambda x: "Diesel" if x == 1 else "Gas")
-aspiration = st.selectbox("Aspiration", options=[0, 1], format_func=lambda x: "Turbo" if x == 1 else "Standard")
-doornumber = st.selectbox("Door Number", options=[0, 1], format_func=lambda x: "Two" if x == 1 else "Four")
-carbody = st.selectbox("Car Body", options=[0, 1], format_func=lambda x: "Hatchback" if x == 1 else "Sedan")
-drivewheel = st.selectbox("Drive Wheel", options=[0, 1], format_func=lambda x: "FWD" if x == 1 else "RWD")
-enginelocation = st.selectbox("Engine Location", options=[0, 1], format_func=lambda x: "Front" if x == 1 else "Rear")
-wheelbase = st.number_input("Wheelbase", value=88.6)
-carlength = st.number_input("Car Length", value=168.8)
-carwidth = st.number_input("Car Width", value=64.1)
-carheight = st.number_input("Car Height", value=48.8)
-curbweight = st.number_input("Curb Weight", value=2548)
-enginetype = st.selectbox("Engine Type", options=[0, 1], format_func=lambda x: "DOHC" if x == 1 else "SOHC")
-cylindernumber = st.number_input("Cylinder Number", value=4)
-enginesize = st.number_input("Engine Size", value=130)
-fuelsystem = st.selectbox("Fuel System", options=[0, 1], format_func=lambda x: "MPFI" if x == 1 else "1BBL")
-boreratio = st.number_input("Bore Ratio", value=3.47)
-stroke = st.number_input("Stroke", value=2.68)
-compressionratio = st.number_input("Compression Ratio", value=9.0)
-horsepower = st.number_input("Horsepower", value=111)
-peakrpm = st.number_input("Peak RPM", value=5000)
-citympg = st.number_input("City MPG", value=21)
-highwaympg = st.number_input("Highway MPG", value=27)
+    # Load data
+    df = load_data()
 
+    # Train model if not already trained
+    if 'model' not in st.session_state:
+        model, scaler = train_model(df)
+        joblib.dump(model, 'LinearRegressionModel.joblib')  # Save the model
+        st.session_state.model = model
+        st.session_state.scaler = scaler
+    else:
+        model = st.session_state.model
+        scaler = st.session_state.scaler
 
-# Button for prediction
-if st.button("Predict"):
-    features = [symboling, CarName, fueltype, aspiration, doornumber, carbody, drivewheel,
-                enginelocation, wheelbase, carlength, carwidth, carheight, curbweight,
-                enginetype, cylindernumber, enginesize, fuelsystem, boreratio, stroke,
-                compressionratio, horsepower, peakrpm, citympg, highwaympg, brand, model_input,
-                power_to_weight_ratio, wheelbase_squared, carlength_squared, carwidth_squared,
-                carheight_squared, curbweight_squared, enginesize_squared, boreratio_squared,
-                stroke_squared, compressionratio_squared, horsepower_squared, peakrpm_squared,
-                citympg_squared, highwaympg_squared, log_enginesize]
+    # User inputs for features using select boxes
+    st.sidebar.header("Input Features")
+    
+    symboling = st.sidebar.number_input("Symboling", value=3, min_value=-2, max_value=3)
+    CarName = st.sidebar.selectbox("Car Name", options=[
+        'alfa-romero giulia', 'alfa-romero stelvio', 'alfa-romero Quadrifoglio',
+        'audi 100 ls', 'audi 100ls', 'audi fox', 'audi 5000', 'audi 4000',
+        'audi 5000s (diesel)', 'bmw 320i', 'bmw x1', 'bmw x3', 'bmw z4', 'bmw x4',
+        'bmw x5', 'chevrolet impala', 'chevrolet monte carlo', 'chevrolet vega 2300',
+        'dodge rampage', 'dodge challenger se', 'dodge d200', 'dodge monaco (sw)',
+        'dodge colt hardtop', 'dodge colt (sw)', 'dodge coronet custom',
+        'dodge dart custom', 'dodge coronet custom (sw)', 'honda civic',
+        'honda civic cvcc', 'honda accord cvcc', 'honda accord lx',
+        'honda civic 1500 gl', 'honda accord', 'honda civic 1300', 'honda prelude',
+        'honda civic (auto)', 'isuzu MU-X', 'isuzu D-Max ', 'isuzu D-Max V-Cross',
+        'jaguar xj', 'jaguar xf', 'jaguar xk', 'maxda rx3', 'maxda glc deluxe',
+        'mazda rx2 coupe', 'mazda rx-4', 'mazda glc deluxe', 'mazda 626', 'mazda glc',
+        'mazda rx-7 gs', 'mazda glc 4', 'mazda glc custom l', 'mazda glc custom',
+        'buick electra 225 custom', 'buick century luxus (sw)', 'buick century',
+        'buick skyhawk', 'buick opel isuzu deluxe', 'buick skylark',
+        'buick century special', 'buick regal sport coupe (turbo)',
+        'mercury cougar', 'mitsubishi mirage', 'mitsubishi lancer',
+        'mitsubishi outlander', 'mitsubishi g4', 'mitsubishi mirage g4',
+        'mitsubishi montero', 'mitsubishi pajero', 'Nissan versa', 'nissan gt-r',
+        'nissan rogue', 'nissan latio', 'nissan titan', 'nissan leaf', 'nissan juke',
+        'nissan note', 'nissan clipper', 'nissan nv200', 'nissan dayz', 'nissan fuga',
+        'nissan otti', 'nissan teana', 'nissan kicks', 'peugeot 504', 'peugeot 304',
+        'peugeot 504 (sw)', 'peugeot 604sl', 'peugeot 505s turbo diesel',
+        'plymouth fury iii', 'plymouth cricket', 'plymouth satellite custom (sw)',
+        'plymouth fury gran sedan', 'plymouth valiant', 'plymouth duster',
+        'porsche macan', 'porcshce panamera', 'porsche cayenne', 'porsche boxter',
+        'renault 12tl', 'renault 5 gtl', 'saab 99e', 'saab 99le', 'saab 99gle',
+        'subaru', 'subaru dl', 'subaru brz', 'subaru baja', 'subaru r1', 'subaru r2',
+        'subaru trezia', 'subaru tribeca', 'toyota corona mark ii', 'toyota corona',
+        'toyota corolla 1200', 'toyota corona hardtop', 'toyota corolla 1600 (sw)',
+        'toyota carina', 'toyota mark ii', 'toyota corolla',
+        'toyota corolla liftback', 'toyota celica gt liftback',
+        'toyota corolla tercel', 'toyota corona liftback', 'toyota starlet',
+        'toyota tercel', 'toyota cressida', 'toyota celica gt', 'toyouta tercel',
+        'vokswagen rabbit', 'volkswagen 1131 deluxe sedan', 'volkswagen model 111',
+        'volkswagen type 3', 'volkswagen 411 (sw)', 'volkswagen super beetle',
+        'volkswagen dasher', 'vw dasher', 'vw rabbit', 'volkswagen rabbit',
+        'volkswagen rabbit custom', 'volvo 145e (sw)', 'volvo 144ea', 'volvo 244dl',
+        'volvo 245', 'volvo 264gl', 'volvo diesel', 'volvo 246'
+    ])
+    
+    fueltype = st.sidebar.selectbox("Fuel Type", options=['gas', 'diesel'])
+    aspiration = st.sidebar.selectbox("Aspiration", options=['std', 'turbo'])
+    doornumber = st.sidebar.selectbox("Door Number", options=['two', 'four'])
+    carbody = st.sidebar.selectbox("Car Body", options=['convertible', 'hatchback', 'sedan', 'wagon', 'hardtop'])
+    drivewheel = st.sidebar.selectbox("Drive Wheel", options=['rwd', 'fwd', '4wd'])
+    enginelocation = st.sidebar.selectbox("Engine Location", options=['front', 'rear'])
+    
+    wheelbase = st.sidebar.number_input("Wheelbase", value=88.6, min_value=86.6, max_value=120.9)
+    carlength = st.sidebar.number_input("Car Length", value=168.8, min_value=141.1, max_value=208.1)
+    carwidth = st.sidebar.number_input("Car Width", value=64.1, min_value=60.3, max_value=72.3)
+    carheight = st.sidebar.number_input("Car Height", value=48.8, min_value=47.8, max_value=59.8)
+    curbweight = st.sidebar.number_input("Curb Weight", value=2548, min_value=1488, max_value=4066)
+    
+    enginetype = st.sidebar.selectbox("Engine Type", options=['dohc', 'ohcv', 'ohc', 'l', 'rotor', 'ohcf', 'dohcv'])
+    cylindernumber = st.sidebar.selectbox("Cylinder Number", options=['four', 'six', 'five', 'three', 'twelve', 'two', 'eight'])
+    
+    enginesize = st.sidebar.number_input("Engine Size", value=130, min_value=61, max_value=326)
+    fuelsystem = st.sidebar.selectbox("Fuel System", options=['mpfi', '2bbl', 'mfi', '1bbl', 'spfi', '4bbl', 'idi', 'spdi'])
+    
+    boreratio = st.sidebar.number_input("Bore Ratio", value=3.47, min_value=2.54, max_value=3.94)
+    stroke = st.sidebar.number_input("Stroke", value=2.68, min_value=2.07, max_value=4.17)
+    compressionratio = st.sidebar.number_input("Compression Ratio", value=9.0, min_value=7.0, max_value=23.0)
+    
+    horsepower = st.sidebar.number_input("Horsepower", value=111, min_value=48, max_value=288)
+    peakrpm = st.sidebar.number_input("Peak RPM", value=5000, min_value=4150, max_value=6600)
+    citympg = st.sidebar.number_input("City MPG", value=21, min_value=13, max_value=49)
+    highwaympg = st.sidebar.number_input("Highway MPG", value=27, min_value=16, max_value=45)
 
-    predicted_price = predict_price(features)
-    st.success(f"The predicted car price is: ${predicted_price:.2f}")
+    # Button for prediction
+    if st.sidebar.button("Predict"):
+        features = [symboling, fueltype, aspiration, doornumber, carbody, drivewheel,
+                    enginelocation, wheelbase, carlength, carwidth, carheight, curbweight,
+                    enginetype, cylindernumber, enginesize, fuelsystem, boreratio, stroke,
+                    compressionratio, horsepower, peakrpm, citympg, highwaympg]
+
+        predicted_price = predict_price(model, scaler, features)
+        st.success(f"The predicted car price is: ${predicted_price:.2f}")
+
+if __name__ == "__main__":
+    main()
+
