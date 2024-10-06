@@ -24,6 +24,9 @@ def train_model(df):
     # Strip any whitespace from column names
     df.columns = df.columns.str.strip()
     
+    # Print column names for debugging
+    print("Columns in DataFrame:", df.columns.tolist())
+    
     # Check for duplicates
     if df.columns.duplicated().any():
         st.error("There are duplicate column names in the dataset.")
@@ -59,6 +62,7 @@ def train_model(df):
     model.fit(X, y)
     
     return model
+
 
 
 def predict_price(model, features):
