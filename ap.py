@@ -15,11 +15,13 @@ from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from joblib import dump, load
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
+
 @st.cache_data
 def load_data():
     df = pd.read_csv('car_data.csv')  # Replace with your actual CSV file path
     print("DataFrame Columns:", df.columns.tolist())  # Check columns
     return df
+
 def train_model(df):
     # Strip any whitespace from column names
     df.columns = df.columns.str.strip()
@@ -42,8 +44,8 @@ def train_model(df):
     y = df["price"]
 
     # Identify categorical and numerical columns
-    categorical_cols = df.select_dtypes(include=['object', 'string']).columns.tolist()
-    numerical_cols = df.select_dtypes(exclude=['object', 'string']).columns.tolist()
+    categorical_cols = X.select_dtypes(include=['object', 'string']).columns.tolist()
+    numerical_cols = X.select_dtypes(exclude=['object', 'string']).columns.tolist()
 
     # Create a pipeline for preprocessing
     preprocessor = ColumnTransformer(
@@ -62,8 +64,6 @@ def train_model(df):
     model.fit(X, y)
     
     return model
-
-
 
 def predict_price(model, features):
     # Convert features to DataFrame
@@ -122,7 +122,10 @@ def main():
         features = [symboling, fueltype, aspiration, doornumber, carbody, drivewheel,
                     enginelocation, wheelbase, carlength, carwidth, carheight, curbweight,
                     enginetype, cylindernumber, enginesize, fuelsystem, boreratio, stroke,
-                    compressionratio, horsepower, peakrpm, citympg, highwaympg, car_name]
+                    compressionratio, horsepower, peakrpm, citympg, highwaympg]
+
+        # Append car_name to features list
+        features.append(car_name)
 
         predicted_price = predict_price(model, features)
         st.success(f"The predicted car price is: ${predicted_price:.2f}")
