@@ -7,10 +7,16 @@ Original file is located at
     https://colab.research.google.com/notebooks/markdown_guide.ipynb
 """
 import pandas as pd
+import numpy as np
 import streamlit as st
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import StandardScaler
 from joblib import dump
+@st.cache_data
+def load_data():
+    df = pd.read_csv('car_data.csv')  # Replace with your actual CSV file path
+    print("DataFrame Columns:", df.columns.tolist())  # Check columns
+    return df
 
 def train_model(df):
     # Clean column names
