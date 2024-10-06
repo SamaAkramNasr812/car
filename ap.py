@@ -93,7 +93,7 @@ def main():
     car_name = st.sidebar.selectbox("Car Name", options=df['CarName'].unique())
     
     # Numeric inputs (example inputs)
-    symboling = st.sidebar.number_input("Symboling", min_value=-2, max_value=2, value=0)
+    symboling = st.sidebar.number_input("Symboling", min_value=-2, max_value=3, value=0)
     fueltype = st.sidebar.selectbox("Fuel Type", options=df['fueltype'].unique())
     aspiration = st.sidebar.selectbox("Aspiration", options=df['aspiration'].unique())
     doornumber = st.sidebar.selectbox("Door Number", options=df['doornumber'].unique())
