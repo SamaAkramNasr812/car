@@ -75,7 +75,7 @@ def main():
     st.sidebar.header("Input Features")
     
     # Select box for car_name
-    car_name = st.sidebar.selectbox("Car Name", options=df['car_name'].unique())
+    CarName = st.sidebar.selectbox("Car Name", options=df['CarName'].unique())
 
     # Numeric inputs
     symboling = st.sidebar.number_input("Symboling", value=3, min_value=-2, max_value=3)
@@ -109,7 +109,7 @@ def main():
         features = [symboling, fueltype, aspiration, doornumber, carbody, drivewheel,
                     enginelocation, wheelbase, carlength, carwidth, carheight, curbweight,
                     enginetype, cylindernumber, enginesize, fuelsystem, boreratio, stroke,
-                    compressionratio, horsepower, peakrpm, citympg, highwaympg, car_name]
+                    compressionratio, horsepower, peakrpm, citympg, highwaympg, CarName]
 
         predicted_price = predict_price(model, features)
         st.success(f"The predicted car price is: ${predicted_price:.2f}")
