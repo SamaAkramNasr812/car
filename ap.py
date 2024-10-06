@@ -15,18 +15,15 @@ from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from joblib import dump, load
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
-
-# Load the dataset
 @st.cache_data
 def load_data():
     df = pd.read_csv('car_data.csv')  # Replace with your actual CSV file path
+    print("DataFrame Columns:", df.columns.tolist())  # Check columns
     return df
 
 def train_model(df):
-    # Print DataFrame columns for debugging
-    print("DataFrame Columns before training:", df.columns)
-
     # Ensure 'price' column exists
+    df.columns = df.columns.str.strip()  # Strip any whitespace from column names
     if 'price' not in df.columns:
         st.error("The 'price' column is not present in the dataset.")
         return None
