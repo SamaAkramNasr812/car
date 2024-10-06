@@ -23,6 +23,9 @@ def load_data():
     return df
 
 def train_model(df):
+    # Print DataFrame columns for debugging
+    print("DataFrame Columns before training:", df.columns)
+
     # Ensure 'price' column exists
     if 'price' not in df.columns:
         st.error("The 'price' column is not present in the dataset.")
@@ -52,6 +55,12 @@ def train_model(df):
     
     return model
 
+def predict_price(model, features):
+    # Convert features to DataFrame
+    feature_names = model.named_steps['preprocessor'].get_feature_names_out()
+    features_df = pd.DataFrame([features], columns=feature_names)
+    return model.predict(features_df)[0]
+
 def main():
     st.title("Car Price Prediction App")
 
@@ -72,9 +81,31 @@ def main():
     
     # Select box for car_name
     car_name = st.sidebar.selectbox("Car Name", options=df['CarName'].unique())
-
-    # Numeric inputs
-    # ... (other inputs remain unchanged)
+    
+    # Numeric inputs (example inputs)
+    symboling = st.sidebar.number_input("Symboling", min_value=-2, max_value=2, value=0)
+    fueltype = st.sidebar.selectbox("Fuel Type", options=df['fueltype'].unique())
+    aspiration = st.sidebar.selectbox("Aspiration", options=df['aspiration'].unique())
+    doornumber = st.sidebar.selectbox("Door Number", options=df['doornumber'].unique())
+    carbody = st.sidebar.selectbox("Car Body", options=df['carbody'].unique())
+    drivewheel = st.sidebar.selectbox("Drive Wheel", options=df['drivewheel'].unique())
+    enginelocation = st.sidebar.selectbox("Engine Location", options=df['enginelocation'].unique())
+    wheelbase = st.sidebar.number_input("Wheelbase", min_value=0.0, value=0.0)
+    carlength = st.sidebar.number_input("Car Length", min_value=0.0, value=0.0)
+    carwidth = st.sidebar.number_input("Car Width", min_value=0.0, value=0.0)
+    carheight = st.sidebar.number_input("Car Height", min_value=0.0, value=0.0)
+    curbweight = st.sidebar.number_input("Curb Weight", min_value=0, value=0)
+    enginetype = st.sidebar.selectbox("Engine Type", options=df['enginetype'].unique())
+    cylindernumber = st.sidebar.selectbox("Cylinder Number", options=df['cylindernumber'].unique())
+    enginesize = st.sidebar.number_input("Engine Size", min_value=0, value=0)
+    fuelsystem = st.sidebar.selectbox("Fuel System", options=df['fuelsystem'].unique())
+    boreratio = st.sidebar.number_input("Bore Ratio", min_value=0.0, value=0.0)
+    stroke = st.sidebar.number_input("Stroke", min_value=0.0, value=0.0)
+    compressionratio = st.sidebar.number_input("Compression Ratio", min_value=0.0, value=0.0)
+    horsepower = st.sidebar.number_input("Horsepower", min_value=0, value=0)
+    peakrpm = st.sidebar.number_input("Peak RPM", min_value=0, value=0)
+    citympg = st.sidebar.number_input("City MPG", min_value=0, value=0)
+    highwaympg = st.sidebar.number_input("Highway MPG", min_value=0, value=0)
 
     # Button for prediction
     if st.sidebar.button("Predict"):
