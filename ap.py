@@ -13,6 +13,8 @@ from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split, KFold, cross_val_score
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 from joblib import dump, load
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
 
 # Load the dataset
 @st.cache_data
@@ -20,64 +22,39 @@ def load_data():
     df = pd.read_csv('car_data.csv')  # Replace with your actual CSV file path
     return df
 
-# Train the Linear Regression model
 def train_model(df):
     # Identify categorical and numerical columns
     categorical_cols = df.select_dtypes(include=['object', 'string']).columns
     numerical_cols = df.select_dtypes(exclude=['object', 'string']).columns
 
-    # One-hot encode categorical columns
-    df_encoded = pd.get_dummies(df, columns=categorical_cols, drop_first=True)
-
-    # Check if 'price' is in the DataFrame after encoding
-    if 'price' not in df_encoded.columns:
-        raise KeyError("The 'price' column is not present in the DataFrame after encoding.")
-
+    # Create a pipeline for preprocessing
+    preprocessor = ColumnTransformer(
+        transformers=[
+            ('num', StandardScaler(), numerical_cols),
+            ('cat', OneHotEncoder(handle_unknown='ignore'), categorical_cols)
+        ]
+    )
+    
     # Define features and target
-    X = df_encoded.drop(columns=["price"])  # Drop 'price' for features
-    y = df_encoded["price"]                   # Extract 'price' as target variable
+    X = df.drop(columns=["price"])
+    y = df["price"]
 
-    # Feature scaling on numerical features only
-    scaler = StandardScaler()
+    # Create and fit the model pipeline
+    model = Pipeline(steps=[('preprocessor', preprocessor),
+                             ('regressor', LinearRegression())])
     
-    # Ensure numerical_cols are still valid
-    numerical_cols = [col for col in numerical_cols if col in X.columns]
-    
-    if not numerical_cols:
-        raise ValueError("No numerical columns found for scaling.")
-
-    X[numerical_cols] = scaler.fit_transform(X[numerical_cols])
-
-    # Initialize KFold
-    kf = KFold(n_splits=5, shuffle=True, random_state=31)
-
-    # Train the model with cross-validation
-    model = LinearRegression()
-    model_score = cross_val_score(model, X, y, cv=kf)
-
-
-    # Fit the model
     model.fit(X, y)
-
-    return model, scaler
-
-# Function to make predictions
-def predict_price(model, scaler, features):
-    # Convert features to DataFrame
-    input_data = pd.DataFrame([features])
     
-    # One-hot encode categorical features
-    input_data_encoded = pd.get_dummies(input_data, drop_first=True)
+    return model
 
-    # Align with model's expected features
-    input_data_encoded = input_data_encoded.reindex(columns=model.feature_names_in_, fill_value=0)
-
-    # Scale the input data
-    input_data_encoded[model.feature_names_in_] = scaler.transform(input_data_encoded[model.feature_names_in_])
+def predict_price(model, input_data):
+    # Ensure the input data has the same columns as the training data
+    input_data_encoded = pd.DataFrame(input_data, index=[0])  # Ensure it's a DataFrame
+    input_data_encoded = input_data_encoded.reindex(columns=model.named_steps['preprocessor'].get_feature_names_out(), fill_value=0)
     
+    # Make the prediction
     prediction = model.predict(input_data_encoded)
     return prediction[0]
-
 # Main function
 def main():
     st.title("Car Price Prediction App")
