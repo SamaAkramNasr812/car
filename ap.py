@@ -11,7 +11,7 @@ import pandas as pd
 import numpy as np
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split, KFold, cross_val_score
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, LabelEncoder
 from joblib import dump, load
 
 # Load the dataset
@@ -29,16 +29,23 @@ def train_model(df):
     # One-hot encode categorical columns
     df_encoded = pd.get_dummies(df, columns=categorical_cols, drop_first=True)
 
-    # Check if 'price' is in the DataFrame
+    # Check if 'price' is in the DataFrame after encoding
     if 'price' not in df_encoded.columns:
-        raise KeyError("The 'price' column is not in the DataFrame after encoding.")
+        raise KeyError("The 'price' column is not present in the DataFrame after encoding.")
 
     # Define features and target
-    X = df_encoded.drop(columns=["price"])  # Assuming 'price' is the target variable
-    y = df_encoded["price"]
+    X = df_encoded.drop(columns=["price"])  # Drop 'price' for features
+    y = df_encoded["price"]                   # Extract 'price' as target variable
 
     # Feature scaling on numerical features only
     scaler = StandardScaler()
+    
+    # Ensure numerical_cols are still valid
+    numerical_cols = [col for col in numerical_cols if col in X.columns]
+    
+    if not numerical_cols:
+        raise ValueError("No numerical columns found for scaling.")
+
     X[numerical_cols] = scaler.fit_transform(X[numerical_cols])
 
     # Initialize KFold
