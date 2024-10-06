@@ -19,14 +19,6 @@ def load_data():
     return df
 
 def train_model(df):
-    # Clean column names
-    df.columns = df.columns.str.strip()
-    st.write("Columns in DataFrame:", df.columns.tolist())
-
-    # Check for duplicates
-    if df.columns.duplicated().any():
-        st.error("Duplicate column names found in the dataset.")
-        return None
 
     # Validate 'price' column presence
     if 'price' not in df.columns:
