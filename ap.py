@@ -11,7 +11,7 @@ import pandas as pd
 import numpy as np
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split, KFold, cross_val_score
-from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.preprocessing import StandardScaler, OneHotEncoder, LabelEncoder
 from joblib import dump, load
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
