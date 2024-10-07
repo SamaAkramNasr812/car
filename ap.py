@@ -10,6 +10,191 @@ import pandas as pd
 import numpy as np
 import streamlit as st
 from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import StandardScaler, LabelEncoder
+from joblib import dump, load
+
+@st.cache_data
+def load_data():
+    """Load car data from a CSV file."""
+    df = pd.read_csv('car_data.csv')  # Replace with your actual CSV file path
+    return df
+
+def train_and_save_model(df):
+    """Train the model and save it along with the scaler."""
+    # Prepare feature columns and target variable
+    X = df.drop('price', axis=1)  # Replace 'price' with your target variable
+    y = df['price']  # Replace 'price' with your target variable
+
+    # Encode categorical features using LabelEncoder
+    label_encoders = {}
+    for column in X.select_dtypes(include=['object']).columns:
+        le = LabelEncoder()
+        X[column] = le.fit_transform(X[column])
+        label_encoders[column] = le
+
+    # Scale the features
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X)
+
+    # Train the model
+    model = LinearRegression()
+    model.fit(X_scaled, y)
+
+    # Save the model, the scaler, and the label encoders
+    dump(model, 'LinearRegressionModel.joblib')
+    dump(scaler, 'StandardScalerModel.joblib')
+    dump(label_encoders, 'LabelEncoders.joblib')
+
+def main():
+    """Main function to run the Streamlit app."""
+    st.title("Car Price Prediction App")
+
+    # Load data
+    df = load_data()
+
+    # Train and save model if not already done
+    if not st.session_state.get('model_trained', False):
+        train_and_save_model(df)
+        st.session_state['model_trained'] = True
+        st.success("Model trained and saved successfully!")
+
+    # User inputs for features
+    st.sidebar.header("Input Features")
+    
+    # Select boxes for categorical features
+    CarName = st.sidebar.selectbox("Car Name", options=df['CarName'].unique())
+    fueltype = st.sidebar.selectbox("Fuel Type", options=df['fueltype'].unique())
+    aspiration = st.sidebar.selectbox("Aspiration", options=df['aspiration'].unique())
+    doornumber = st.sidebar.selectbox("Door Number", options=df['doornumber'].unique())
+    carbody = st.sidebar.selectbox("Car Body", options=df['carbody'].unique())
+    drivewheel = st.sidebar.selectbox("Drive Wheel", options=df['drivewheel'].unique())
+    enginelocation = st.sidebar.selectbox("Engine Location", options=df['enginelocation'].unique())
+    enginetype = st.sidebar.selectbox("Engine Type", options=df['enginetype'].unique())
+    cylindernumber = st.sidebar.selectbox("Cylinder Number", options=df['cylindernumber'].unique())
+    fuelsystem = st.sidebar.selectbox("Fuel System", options=df['fuelsystem'].unique())
+
+    # Numeric inputs for car features
+    symboling = st.sidebar.number_input("Symboling", min_value=-2, max_value=3, value=3)
+    wheelbase = st.sidebar.number_input("Wheelbase", min_value=0.0, value=88.6)
+    carlength = st.sidebar.number_input("Car Length", min_value=0.0, value=168.8)
+    carwidth = st.sidebar.number_input("Car Width", min_value=0.0, value=64.1)
+    carheight = st.sidebar.number_input("Car Height", min_value=0.0, value=48.8)
+    curbweight = st.sidebar.number_input("Curb Weight", min_value=0, value=2548)
+    enginesize = st.sidebar.number_input("Engine Size", min_value=0, value=130)
+    boreratio = st.sidebar.number_input("Bore Ratio", min_value=0.0, value=3.47)
+    stroke = st.sidebar.number_input("Stroke", min_value=0.0, value=2.68)
+    compressionratio = st.sidebar.number_input("Compression Ratio", min_value=0.0, value=9.0)
+    horsepower = st.sidebar.number_input("Horsepower", min_value=0, value=111)
+    peakrpm = st.sidebar.number_input("Peak RPM", min_value=0, value=5000)
+    citympg = st.sidebar.number_input("City MPG", min_value=0, value=21)
+    highwaympg = st.sidebar.number_input("Highway MPG", min_value=0, value=27)
+
+    # Collect features for prediction
+    features = [
+        symboling, CarName, fueltype, aspiration, doornumber, carbody, drivewheel,
+        enginelocation, wheelbase, carlength, carwidth, carheight, curbweight,
+        enginetype, cylindernumber, enginesize, fuelsystem, boreratio, stroke,
+        compressionratio, horsepower, peakrpm, citympg, highwaympg
+    ]
+
+    # Prediction button
+    if st.sidebar.button("Predict"):
+        # Prepare input data for prediction
+        input_data = pd.DataFrame([features], columns=[
+            'symboling',
+            'CarName',
+            'fueltype',
+            'aspiration',
+            'doornumber',
+            'carbody',
+            'drivewheel',
+            'enginelocation',
+            'wheelbase',
+            'carlength',
+            'carwidth',
+            'carheight',
+            'curbweight',
+            'enginetype',
+            'cylindernumber',
+            'enginesize',
+            'fuelsystem',
+            'boreratio',
+            'stroke',
+            'compressionratio',
+            'horsepower',
+            'peakrpm',
+            'citympg',
+            'highwaympg'
+        ])
+
+        # Load the trained model, scaler, and label encoders
+        model = load('LinearRegressionModel.joblib')  # Load your trained model
+        scaler = load('StandardScalerModel.joblib')  # Load your scaler
+        label_encoders = load('LabelEncoders.joblib')  # Load your label encoders
+
+        # Encode categorical features in input data
+        for column in input_data.select_dtypes(include=['object']).columns:
+            if column in label_encoders:
+                input_data[column] = label_encoders[column].transform(input_data[column])
+
+        # Scale the input data
+        input_data_scaled = scaler.transform(input_data)
+
+        # Make predictions
+        prediction = model.predict(input_data_scaled)
+        st.success(f"The predicted car price is: ${prediction[0]:.2f}")
+
+if __name__ == "__main__":
+    main()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
+import numpy as np
+import streamlit as st
+from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import StandardScaler
 from joblib import dump, load
 
