@@ -129,9 +129,6 @@ def main():
         model = load('LinearRegressionModel.joblib')  # Load your trained model
         scaler = load('StandardScalerModel.joblib')  # Load your scaler
 
-        # Ensure input_data has the same columns as your training data
-        input_data = input_data.reindex(columns=model.feature_names_in_, fill_value=0)
-
         # Scale the input data
         input_data_scaled = scaler.transform(input_data)
 
