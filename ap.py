@@ -16,7 +16,6 @@ from joblib import dump, load
 @st.cache_data
 def load_data():
     df = pd.read_csv('car_data.csv')  # Replace with your actual CSV file path
-    print("DataFrame Columns:", df.columns.tolist())  # Check columns
     return df
 
 def train_model(df):
