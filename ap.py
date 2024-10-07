@@ -56,8 +56,7 @@ def main():
     if 'model_trained' not in st.session_state:
         train_and_save_model(df)
         st.session_state['model_trained'] = True
-        st.success("Model trained and saved successfully!")
-
+      
     # User inputs for features
     st.sidebar.header("Input Features")
     
