@@ -9,7 +9,7 @@ To run the Car Price Prediction App locally or on Streamlit, follow these steps:
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/SamaAkramNasr812/car
+   git clone https://github.com/SamaAkramNasr812/car.git
    cd car
    ```
 
