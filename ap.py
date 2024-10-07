@@ -62,16 +62,54 @@ def main():
     st.sidebar.header("Input Features")
     
     # Select boxes for categorical features
-    CarName = st.sidebar.selectbox("Car Name", options=df['CarName'].unique())
-    fueltype = st.sidebar.selectbox("Fuel Type", options=df['fueltype'].unique())
-    aspiration = st.sidebar.selectbox("Aspiration", options=df['aspiration'].unique())
-    doornumber = st.sidebar.selectbox("Door Number", options=df['doornumber'].unique())
-    carbody = st.sidebar.selectbox("Car Body", options=df['carbody'].unique())
-    drivewheel = st.sidebar.selectbox("Drive Wheel", options=df['drivewheel'].unique())
-    enginelocation = st.sidebar.selectbox("Engine Location", options=df['enginelocation'].unique())
-    enginetype = st.sidebar.selectbox("Engine Type", options=df['enginetype'].unique())
-    cylindernumber = st.sidebar.selectbox("Cylinder Number", options=df['cylindernumber'].unique())
-    fuelsystem = st.sidebar.selectbox("Fuel System", options=df['fuelsystem'].unique())
+    CarName = st.sidebar.selectbox("Car Name", ['alfa-romero giulia' 'alfa-romero stelvio' 'alfa-romero Quadrifoglio'
+ 'audi 100 ls' 'audi 100ls' 'audi fox' 'audi 5000' 'audi 4000'
+ 'audi 5000s (diesel)' 'bmw 320i' 'bmw x1' 'bmw x3' 'bmw z4' 'bmw x4'
+ 'bmw x5' 'chevrolet impala' 'chevrolet monte carlo' 'chevrolet vega 2300'
+ 'dodge rampage' 'dodge challenger se' 'dodge d200' 'dodge monaco (sw)'
+ 'dodge colt hardtop' 'dodge colt (sw)' 'dodge coronet custom'
+ 'dodge dart custom' 'dodge coronet custom (sw)' 'honda civic'
+ 'honda civic cvcc' 'honda accord cvcc' 'honda accord lx'
+ 'honda civic 1500 gl' 'honda accord' 'honda civic 1300' 'honda prelude'
+ 'honda civic (auto)' 'isuzu MU-X' 'isuzu D-Max ' 'isuzu D-Max V-Cross'
+ 'jaguar xj' 'jaguar xf' 'jaguar xk' 'maxda rx3' 'maxda glc deluxe'
+ 'mazda rx2 coupe' 'mazda rx-4' 'mazda glc deluxe' 'mazda 626' 'mazda glc'
+ 'mazda rx-7 gs' 'mazda glc 4' 'mazda glc custom l' 'mazda glc custom'
+ 'buick electra 225 custom' 'buick century luxus (sw)' 'buick century'
+ 'buick skyhawk' 'buick opel isuzu deluxe' 'buick skylark'
+ 'buick century special' 'buick regal sport coupe (turbo)'
+ 'mercury cougar' 'mitsubishi mirage' 'mitsubishi lancer'
+ 'mitsubishi outlander' 'mitsubishi g4' 'mitsubishi mirage g4'
+ 'mitsubishi montero' 'mitsubishi pajero' 'Nissan versa' 'nissan gt-r'
+ 'nissan rogue' 'nissan latio' 'nissan titan' 'nissan leaf' 'nissan juke'
+ 'nissan note' 'nissan clipper' 'nissan nv200' 'nissan dayz' 'nissan fuga'
+ 'nissan otti' 'nissan teana' 'nissan kicks' 'peugeot 504' 'peugeot 304'
+ 'peugeot 504 (sw)' 'peugeot 604sl' 'peugeot 505s turbo diesel'
+ 'plymouth fury iii' 'plymouth cricket' 'plymouth satellite custom (sw)'
+ 'plymouth fury gran sedan' 'plymouth valiant' 'plymouth duster'
+ 'porsche macan' 'porcshce panamera' 'porsche cayenne' 'porsche boxter'
+ 'renault 12tl' 'renault 5 gtl' 'saab 99e' 'saab 99le' 'saab 99gle'
+ 'subaru' 'subaru dl' 'subaru brz' 'subaru baja' 'subaru r1' 'subaru r2'
+ 'subaru trezia' 'subaru tribeca' 'toyota corona mark ii' 'toyota corona'
+ 'toyota corolla 1200' 'toyota corona hardtop' 'toyota corolla 1600 (sw)'
+ 'toyota carina' 'toyota mark ii' 'toyota corolla'
+ 'toyota corolla liftback' 'toyota celica gt liftback'
+ 'toyota corolla tercel' 'toyota corona liftback' 'toyota starlet'
+ 'toyota tercel' 'toyota cressida' 'toyota celica gt' 'toyouta tercel'
+ 'vokswagen rabbit' 'volkswagen 1131 deluxe sedan' 'volkswagen model 111'
+ 'volkswagen type 3' 'volkswagen 411 (sw)' 'volkswagen super beetle'
+ 'volkswagen dasher' 'vw dasher' 'vw rabbit' 'volkswagen rabbit'
+ 'volkswagen rabbit custom' 'volvo 145e (sw)' 'volvo 144ea' 'volvo 244dl'
+ 'volvo 245' 'volvo 264gl' 'volvo diesel' 'volvo 246'])
+    fueltype = st.sidebar.selectbox("Fuel Type", ['gas' 'diesel'])
+    aspiration = st.sidebar.selectbox("Aspiration", ['std' 'turbo'])
+    doornumber = st.sidebar.selectbox("Door Number", ['two' 'four'])
+    carbody = st.sidebar.selectbox("Car Body", ['convertible' 'hatchback' 'sedan' 'wagon' 'hardtop'])
+    drivewheel = st.sidebar.selectbox("Drive Wheel", ['rwd' 'fwd' '4wd'])
+    enginelocation = st.sidebar.selectbox("Engine Location", ['front' 'rear'])
+    enginetype = st.sidebar.selectbox("Engine Type", ['dohc' 'ohcv' 'ohc' 'l' 'rotor' 'ohcf' 'dohcv'])
+    cylindernumber = st.sidebar.selectbox("Cylinder Number", ['four' 'six' 'five' 'three' 'twelve' 'two' 'eight'])
+    fuelsystem = st.sidebar.selectbox("Fuel System", ['mpfi' '2bbl' 'mfi' '1bbl' 'spfi' '4bbl' 'idi' 'spdi'])
 
     # Numeric inputs for car features
     symboling = st.sidebar.number_input("Symboling", min_value=-2, max_value=3, value=3)
