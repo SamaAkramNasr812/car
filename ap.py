@@ -15,10 +15,12 @@ from joblib import dump, load
 
 @st.cache_data
 def load_data():
+    """Load car data from a CSV file."""
     df = pd.read_csv('car_data.csv')  # Replace with your actual CSV file path
     return df
 
 def main():
+    """Main function to run the Streamlit app."""
     st.title("Car Price Prediction App")
 
     # Load data
@@ -96,11 +98,15 @@ def main():
         # One-hot encode the input data for categorical features
         input_data = pd.get_dummies(input_data, drop_first=True)
 
-        # Load the trained model
+        # Load the trained model and scaler
         model = load('LinearRegressionModel.joblib')  # Load your trained model
+        scaler = load('StandardScalerModel.joblib')  # Load your scaler
+
+        # Ensure input_data has the same columns as your training data
+        input_data = input_data.reindex(columns=model.feature_names_in_, fill_value=0)
 
         # Scale the input data
-        input_data_scaled = model.scaler.transform(input_data)
+        input_data_scaled = scaler.transform(input_data)
 
         # Make predictions
         prediction = model.predict(input_data_scaled)
@@ -108,4 +114,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
