@@ -12,6 +12,7 @@ import streamlit as st
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import StandardScaler
 from joblib import dump
+
 @st.cache_data
 def load_data():
     df = pd.read_csv('car_data.csv')  # Replace with your actual CSV file path
@@ -19,7 +20,6 @@ def load_data():
     return df
 
 def train_model(df):
-
     # Validate 'price' column presence
     if 'price' not in df.columns:
         st.error("The 'price' column is missing from the dataset.")
@@ -53,6 +53,8 @@ def train_model(df):
 def predict_price(model, features):
     # Prepare input DataFrame
     input_data = pd.DataFrame([features], columns=model.feature_names)
+
+    # Ensure the input data has the same columns as the training data
     input_data = input_data.reindex(columns=model.feature_names, fill_value=0)
 
     # Scale input data
@@ -79,7 +81,7 @@ def main():
     st.sidebar.header("Input Features")
     
     # Select boxes for categorical features
-    car_name = st.sidebar.selectbox("Car Name", options=df['CarName'].unique())
+    CarName = st.sidebar.selectbox("Car Name", options=df['CarName'].unique())
     fueltype = st.sidebar.selectbox("Fuel Type", options=df['fueltype'].unique())
     aspiration = st.sidebar.selectbox("Aspiration", options=df['aspiration'].unique())
     doornumber = st.sidebar.selectbox("Door Number", options=df['doornumber'].unique())
@@ -109,13 +111,18 @@ def main():
     }
 
     # Collect features for prediction
-    features = [numeric_inputs["Symboling"], fueltype, aspiration, doornumber, carbody,
-                drivewheel, enginelocation, numeric_inputs["Wheelbase"], numeric_inputs["Car Length"],
-                numeric_inputs["Car Width"], numeric_inputs["Car Height"], numeric_inputs["Curb Weight"],
-                enginetype, cylindernumber, numeric_inputs["Engine Size"], fuelsystem,
-                numeric_inputs["Bore Ratio"], numeric_inputs["Stroke"], numeric_inputs["Compression Ratio"],
-                numeric_inputs["Horsepower"], numeric_inputs["Peak RPM"], numeric_inputs["City MPG"],
-                numeric_inputs["Highway MPG"], car_name]
+    features = [
+        numeric_inputs["Symboling"], fueltype, aspiration, doornumber, carbody,
+        drivewheel, enginelocation, numeric_inputs["Wheelbase"], numeric_inputs["Car Length"],
+        numeric_inputs["Car Width"], numeric_inputs["Car Height"], numeric_inputs["Curb Weight"],
+        enginetype, cylindernumber, numeric_inputs["Engine Size"], fuelsystem,
+        numeric_inputs["Bore Ratio"], numeric_inputs["Stroke"], numeric_inputs["Compression Ratio"],
+        numeric_inputs["Horsepower"], numeric_inputs["Peak RPM"], numeric_inputs["City MPG"],
+        numeric_inputs["Highway MPG"]
+    ]
+
+    # Append CarName to features list
+    features.append(CarName)  # Ensure this matches the training phase
 
     # Prediction button
     if st.sidebar.button("Predict"):
