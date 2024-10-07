@@ -11,7 +11,7 @@ import numpy as np
 import streamlit as st
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import StandardScaler
-from joblib import dump
+from joblib import dump, load
 
 @st.cache_data
 def load_data():
@@ -75,7 +75,9 @@ def main():
             dump(model, 'LinearRegressionModel.joblib')
             st.session_state.model = model
     else:
-        model = st.session_state.model
+        # Load the model from the file
+        model = load('LinearRegressionModel.joblib')
+        st.session_state.model = model  # Ensure the model is stored in session state
 
     # User inputs for features
     st.sidebar.header("Input Features")
@@ -118,16 +120,56 @@ def main():
         enginetype, cylindernumber, numeric_inputs["Engine Size"], fuelsystem,
         numeric_inputs["Bore Ratio"], numeric_inputs["Stroke"], numeric_inputs["Compression Ratio"],
         numeric_inputs["Horsepower"], numeric_inputs["Peak RPM"], numeric_inputs["City MPG"],
-        numeric_inputs["Highway MPG"]
+        numeric_inputs["Highway MPG"], CarName  # Append CarName here
     ]
-
-    # Append CarName to features list
-    features.append(CarName)  # Ensure this matches the training phase
 
     # Prediction button
     if st.sidebar.button("Predict"):
-        predicted_price = predict_price(model, features)
-        st.success(f"The predicted car price is: ${predicted_price:.2f}")
+        # Prepare input data for prediction
+        input_data = [[
+            numeric_inputs["Symboling"],
+            numeric_inputs["Wheelbase"],
+            numeric_inputs["Car Length"],
+            numeric_inputs["Car Width"],
+            numeric_inputs["Car Height"],
+            numeric_inputs["Curb Weight"],
+            numeric_inputs["Engine Size"],
+            numeric_inputs["Bore Ratio"],
+            numeric_inputs["Stroke"],
+            numeric_inputs["Compression Ratio"],
+            numeric_inputs["Horsepower"],
+            numeric_inputs["Peak RPM"],
+            numeric_inputs["City MPG"],
+            numeric_inputs["Highway MPG"],
+            fueltype,
+            aspiration,
+            doornumber,
+            carbody,
+            drivewheel,
+            enginelocation,
+            enginetype,
+            cylindernumber,
+            fuelsystem,
+            CarName
+        ]]
+        
+        input_data = pd.DataFrame(input_data, columns=[
+            'satisfaction_level', 'last_evaluation', 'number_project', 
+            'average_montly_hours', 'time_spend_company', 'salary'
+        ])
+
+        # Get dummies for the input (only for salary)
+        input_data = pd.get_dummies(input_data, drop_first=True)
+
+        # Ensure input_data has the same columns as your training data
+        input_data = input_data.reindex(columns=model.feature_names, fill_value=0)  # Align with training data
+
+        # Scale the input data
+        input_data_scaled = model.scaler.transform(input_data)
+
+        # Make predictions
+        prediction = model.predict(input_data_scaled)
+        st.success(f"The predicted car price is: ${prediction[0]:.2f}")
 
 if __name__ == "__main__":
     main()
