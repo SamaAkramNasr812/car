@@ -9,8 +9,8 @@ To run the Car Price Prediction App locally or on Streamlit, follow these steps:
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/SamaAkramNasr812/CarPricePredictionApp.git
-   cd CarPricePredictionApp
+   git clone https://github.com/SamaAkramNasr812/car
+   cd car
    ```
 
 2. **Install dependencies**:
