@@ -18,65 +18,11 @@ def load_data():
     df = pd.read_csv('car_data.csv')  # Replace with your actual CSV file path
     return df
 
-def train_model(df):
-    # Validate 'price' column presence
-    if 'price' not in df.columns:
-        st.error("The 'price' column is missing from the dataset.")
-        return None
-
-    # Feature extraction
-    X = df.drop(columns=["price"])
-    y = df["price"]
-
-    # Identify column types
-    categorical_cols = X.select_dtypes(include=['object', 'string']).columns.tolist()
-    numerical_cols = X.select_dtypes(exclude=['object', 'string']).columns.tolist()
-
-    # One-hot encoding for categorical features
-    X_encoded = pd.get_dummies(X, columns=categorical_cols, drop_first=True)
-
-    # Scale numerical features
-    scaler = StandardScaler()
-    X_encoded[numerical_cols] = scaler.fit_transform(X_encoded[numerical_cols])
-
-    # Create and fit the model
-    model = LinearRegression()
-    model.fit(X_encoded, y)
-
-    # Store feature names and scaler for future use
-    model.feature_names = X_encoded.columns.tolist()
-    model.scaler = scaler
-
-    return model
-
-def predict_price(model, features):
-    # Prepare input DataFrame
-    input_data = pd.DataFrame([features], columns=model.feature_names)
-
-    # Ensure the input data has the same columns as the training data
-    input_data = input_data.reindex(columns=model.feature_names, fill_value=0)
-
-    # Scale input data
-    input_data[model.feature_names] = model.scaler.transform(input_data[model.feature_names])
-
-    return model.predict(input_data)[0]
-
 def main():
     st.title("Car Price Prediction App")
 
     # Load data
-    df = load_data()  # Ensure this function is defined to load your dataset
-
-    # Train model if not already trained
-    if 'model' not in st.session_state:
-        model = train_model(df)
-        if model is not None:  # Save model only if training was successful
-            dump(model, 'LinearRegressionModel.joblib')
-            st.session_state.model = model
-    else:
-        # Load the model from the file
-        model = load('LinearRegressionModel.joblib')
-        st.session_state.model = model  # Ensure the model is stored in session state
+    df = load_data()
 
     # User inputs for features
     st.sidebar.header("Input Features")
@@ -93,75 +39,68 @@ def main():
     cylindernumber = st.sidebar.selectbox("Cylinder Number", options=df['cylindernumber'].unique())
     fuelsystem = st.sidebar.selectbox("Fuel System", options=df['fuelsystem'].unique())
 
-    # Numeric inputs
-    numeric_inputs = {
-        "Symboling": (st.sidebar.number_input("Symboling", min_value=-2, max_value=3, value=3)),
-        "Wheelbase": (st.sidebar.number_input("Wheelbase", min_value=0.0, value=88.6)),
-        "Car Length": (st.sidebar.number_input("Car Length", min_value=0.0, value=168.8)),
-        "Car Width": (st.sidebar.number_input("Car Width", min_value=0.0, value=64.1)),
-        "Car Height": (st.sidebar.number_input("Car Height", min_value=0.0, value=48.8)),
-        "Curb Weight": (st.sidebar.number_input("Curb Weight", min_value=0, value=2548)),
-        "Engine Size": (st.sidebar.number_input("Engine Size", min_value=0, value=130)),
-        "Bore Ratio": (st.sidebar.number_input("Bore Ratio", min_value=0.0, value=3.47)),
-        "Stroke": (st.sidebar.number_input("Stroke", min_value=0.0, value=2.68)),
-        "Compression Ratio": (st.sidebar.number_input("Compression Ratio", min_value=0.0, value=9.0)),
-        "Horsepower": (st.sidebar.number_input("Horsepower", min_value=0, value=111)),
-        "Peak RPM": (st.sidebar.number_input("Peak RPM", min_value=0, value=5000)),
-        "City MPG": (st.sidebar.number_input("City MPG", min_value=0, value=21)),
-        "Highway MPG": (st.sidebar.number_input("Highway MPG", min_value=0, value=27)),
-    }
+    # Numeric inputs for car features
+    symboling = st.sidebar.number_input("Symboling", min_value=-2, max_value=3, value=3)
+    wheelbase = st.sidebar.number_input("Wheelbase", min_value=0.0, value=88.6)
+    carlength = st.sidebar.number_input("Car Length", min_value=0.0, value=168.8)
+    carwidth = st.sidebar.number_input("Car Width", min_value=0.0, value=64.1)
+    carheight = st.sidebar.number_input("Car Height", min_value=0.0, value=48.8)
+    curbweight = st.sidebar.number_input("Curb Weight", min_value=0, value=2548)
+    enginesize = st.sidebar.number_input("Engine Size", min_value=0, value=130)
+    boreratio = st.sidebar.number_input("Bore Ratio", min_value=0.0, value=3.47)
+    stroke = st.sidebar.number_input("Stroke", min_value=0.0, value=2.68)
+    compressionratio = st.sidebar.number_input("Compression Ratio", min_value=0.0, value=9.0)
+    horsepower = st.sidebar.number_input("Horsepower", min_value=0, value=111)
+    peakrpm = st.sidebar.number_input("Peak RPM", min_value=0, value=5000)
+    citympg = st.sidebar.number_input("City MPG", min_value=0, value=21)
+    highwaympg = st.sidebar.number_input("Highway MPG", min_value=0, value=27)
 
     # Collect features for prediction
     features = [
-        numeric_inputs["Symboling"], fueltype, aspiration, doornumber, carbody,
-        drivewheel, enginelocation, numeric_inputs["Wheelbase"], numeric_inputs["Car Length"],
-        numeric_inputs["Car Width"], numeric_inputs["Car Height"], numeric_inputs["Curb Weight"],
-        enginetype, cylindernumber, numeric_inputs["Engine Size"], fuelsystem,
-        numeric_inputs["Bore Ratio"], numeric_inputs["Stroke"], numeric_inputs["Compression Ratio"],
-        numeric_inputs["Horsepower"], numeric_inputs["Peak RPM"], numeric_inputs["City MPG"],
-        numeric_inputs["Highway MPG"], CarName  # Append CarName here
+        symboling, CarName, fueltype, aspiration, doornumber, carbody, drivewheel,
+        enginelocation, wheelbase, carlength, carwidth, carheight, curbweight,
+        enginetype, cylindernumber, enginesize, fuelsystem, boreratio, stroke,
+        compressionratio, horsepower, peakrpm, citympg, highwaympg
     ]
 
     # Prediction button
     if st.sidebar.button("Predict"):
         # Prepare input data for prediction
-        input_data = [[
-            numeric_inputs["Symboling"],
-            numeric_inputs["Wheelbase"],
-            numeric_inputs["Car Length"],
-            numeric_inputs["Car Width"],
-            numeric_inputs["Car Height"],
-            numeric_inputs["Curb Weight"],
-            numeric_inputs["Engine Size"],
-            numeric_inputs["Bore Ratio"],
-            numeric_inputs["Stroke"],
-            numeric_inputs["Compression Ratio"],
-            numeric_inputs["Horsepower"],
-            numeric_inputs["Peak RPM"],
-            numeric_inputs["City MPG"],
-            numeric_inputs["Highway MPG"],
-            fueltype,
-            aspiration,
-            doornumber,
-            carbody,
-            drivewheel,
-            enginelocation,
-            enginetype,
-            cylindernumber,
-            fuelsystem,
-            CarName
-        ]]
-        
-        input_data = pd.DataFrame(input_data, columns=[
-            'satisfaction_level', 'last_evaluation', 'number_project', 
-            'average_montly_hours', 'time_spend_company', 'salary'
+        input_data = pd.DataFrame([features], columns=[
+            'Symboling',
+            'CarName',
+            'FuelType',
+            'Aspiration',
+            'DoorNumber',
+            'CarBody',
+            'DriveWheel',
+            'EngineLocation',
+            'Wheelbase',
+            'CarLength',
+            'CarWidth',
+            'CarHeight',
+            'CurbWeight',
+            'EngineType',
+            'CylinderNumber',
+            'EngineSize',
+            'FuelSystem',
+            'BoreRatio',
+            'Stroke',
+            'CompressionRatio',
+            'Horsepower',
+            'PeakRPM',
+            'CityMPG',
+            'HighwayMPG'
         ])
 
-        # Get dummies for the input (only for salary)
+        # One-hot encode the input data for categorical features
         input_data = pd.get_dummies(input_data, drop_first=True)
 
+        # Load the trained model
+        model = load('LinearRegressionModel.joblib')  # Load your trained model
+
         # Ensure input_data has the same columns as your training data
-        input_data = input_data.reindex(columns=model.feature_names, fill_value=0)  # Align with training data
+        input_data = input_data.reindex(columns=model.feature_names, fill_value=0)
 
         # Scale the input data
         input_data_scaled = model.scaler.transform(input_data)
@@ -172,3 +111,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
