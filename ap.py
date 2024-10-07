@@ -19,12 +19,39 @@ def load_data():
     df = pd.read_csv('car_data.csv')  # Replace with your actual CSV file path
     return df
 
+def train_and_save_model(df):
+    """Train the model and save it along with the scaler."""
+    # Prepare feature columns and target variable
+    X = df.drop('price', axis=1)  # Replace 'price' with your target variable
+    y = df['price']  # Replace 'price' with your target variable
+
+    # One-hot encode categorical features
+    X = pd.get_dummies(X, drop_first=True)
+
+    # Scale the features
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X)
+
+    # Train the model
+    model = LinearRegression()
+    model.fit(X_scaled, y)
+
+    # Save the model and the scaler
+    dump(model, 'LinearRegressionModel.joblib')
+    dump(scaler, 'StandardScalerModel.joblib')
+
 def main():
     """Main function to run the Streamlit app."""
     st.title("Car Price Prediction App")
 
     # Load data
     df = load_data()
+
+    # Train and save model if not already done
+    if not st.session_state.get('model_trained', False):
+        train_and_save_model(df)
+        st.session_state['model_trained'] = True
+        st.success("Model trained and saved successfully!")
 
     # User inputs for features
     st.sidebar.header("Input Features")
@@ -114,5 +141,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
